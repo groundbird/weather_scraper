@@ -94,9 +94,8 @@ class StellaAlert(Controller_base):
         body += '  '.join(file_header.split('  ')[2:])
         body += '  '.join(data)
 
-        self.alert('gbird.auto@gmial.com', self._to_addrs, body,
+        self.alert('gbird.auto@gmail.com', self._to_addrs, body,
                    level=level, name='Stella',server_name=server_name)
-
 	#self.alert('gbird.auto@gmail.com', 't.tanaka@astr.tohoku.ac.jp', body,
 	 #          level=level, name='Gaulli',server_name=server_name)
     
