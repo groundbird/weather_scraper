@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import os
 from os.path import dirname, abspath, join
 from pathlib import Path
@@ -15,10 +14,12 @@ from email.message import EmailMessage
 from logger_base.controller import Controller_base
 from dome_client import DomeClient
 
-isDebug = True
+from datetime import datetime
 
-input_path = '/home/gb/logger/data/weather/%Y/%m/%Y%m%d_gaulli.raw'
-output_path = '/home/gb/logger/data/weather/%Y/%m/%Y%m%d_gaulli.alert'
+isDebug = False
+
+input_path = '/home/gb/logger/data/%Y/%m/%Y%m%d_gaulli.raw'
+output_path = '/home/gb/logger/data/%Y/%m/%Y%m%d_gaulli.alert'
 
 interval_read   = 61. # sec
 interval_reopen = 2001. # sec
@@ -31,8 +32,6 @@ sockfile = '/home/gb/.gb_sock/alert_gaulli.sock'
 
 address_list_file = join(dirname(abspath(__file__)), 'mail_address_list.conf')
 
-server_name = None
-
 file_header  = '## Localtime  Unixtime  '
 file_header += 'Update UT  '
 file_header += 'PWV[mm]  '
@@ -41,35 +40,7 @@ file_header += 'PWV mean(5d)[mm]  '
 file_header += 'PWV std dev(5d)[mm]'
 file_header += '\n'
 
-if server_name is None:
-    server_name = os.uname().nodename
-
-def send_via_gmail(msg, to_addrs=None, from_addr='shugo.auto@gmail.com'): #from_addr, to_addr, msg):
-    if to_addrs is None:
-        with open(address_list_file) as f:
-            to_addrs = [_.strip() for _ in f if _[0] != '#']
-    for i in range(10):
-        try:
-            s = smtplib.SMTP('smtp.gmail.com', 587)
-            s.starttls()
-            s.login('shugo.auto@gmail.com', 'Cf:+S]]3<kAe>ti:')
-            s.send_message(msg, from_addr, to_addrs)
-            s.close()
-            break
-        except OSError:
-            sleep(20)
-        except Exception as e:
-            #print(e)
-            pass
-
-def make_message(from_addr, to_addr, subject, text):
-    msg = EmailMessage()
-    msg.set_content(text)
-    msg['Subject'] = subject
-    msg['From'] = from_addr
-    msg['To'] = to_addr
-    msg['Date'] = formatdate()
-    return msg
+server_name = os.uname().nodename
 
 class GaulliAlert(Controller_base):
     def initialize(self):
@@ -87,37 +58,30 @@ class GaulliAlert(Controller_base):
     def finalize(self):
         self.write_data_to_file('== alert system stop ==')
         pass
-
+    
     def freeze(self):
         if self._stop_freeze:
             return
-        self.alert('no update data', level=1)
+        dt_now = datetime.now()
+        self.send_alert('no update data', data=None, now=dt_now, level=1)
         self._stop_freeze = True
         return
 
-    def control(self, date_time, data):
-        self._stop_freeze = False
-        self.read_comm()
+    def send_alert(self, message, data, now, level):
+        if self._to_addrs is None:
+            with open(address_list_file) as f:
+                self._to_addrs = [_.strip() for _ in f if _[0] != '#']
 
-        wds = data.split()
+        body = message + '\n'
+        body += self._isotime_(now) + '\n'
+        body += '  '.join(file_header.split('  ')[2:])
+        body += '  '.join(data)
+        
+        self.alert('gbird.auto@gmial.com', self._to_addrs, body,
+                   level=level, name='Gaulli',server_name=server_name)
 
-        # info: enable/disable
-        if self.issue_alert and self.alert_en:
-            self.alert_en = True # temporally true to issue the alert
-            self.write_data_to_file('== alert system enable ==')
-            self.alert('== alert system enable ==', wds, date_time, level=0)
-            self.alert_en = True
-            self.issue_alert = False
-        elif self.issue_alert and not self.alert_en:
-            self.alert_en = True # temporally true to issue the alert
-            self.write_data_to_file('== alert system disable ==')
-            self.alert('== alert system disable ==', wds, date_time, level=0)
-            self.alert_en = False
-            self.issue_alert = False
-        else:
-            pass
-
-        return
+        #self.alert('gbird.auto@gmail.com', 't.tanaka@astr.tohoku.ac.jp', body,
+         #          level=level, name='Gaulli',server_name=server_name)
 
     def read_comm(self):
         buf = self.sock_recv()
@@ -138,36 +102,35 @@ class GaulliAlert(Controller_base):
         except Exception as e:
             #print(e)
             pass
-
         return
+    
+    def control(self, date_time, data):
+        self._stop_freeze = False
+        self.read_comm()
 
-    def alert(self, body, data=None, now=None, level=0):
-        self.write_data_to_file(body)
-        if not self.alert_en: return
-        title = '[Gaulli]'
-        if level == 0: # info
-            title += ' INFO from {}'.format(server_name)
-        elif level == 1: # alert
-            title += ' ALERT from {}'.format(server_name)
-        elif level == 2: # emergency
-            title += ' EMERGENCY from {}'.format(server_name)
+        wds = data.split()
+        
+        #self.send_alert(message='test', data='test', now=dt_now, level=0)
+        
+        # info: enable/disable
+        if self.issue_alert and self.alert_en:
+            self.alert_en = True # temporally true to issue the alert
+            self.write_data_to_file('== alert system enable ==')
+            contents = '== alert system enable =='
+            self.send_alert(message=contents, data=wds, now=date_time, level=0)
+            self.alert_en = True
+            self.issue_alert = False
+            
+        elif self.issue_alert and not self.alert_en:
+            self.alert_en = True # temporally true to issue the alert
+            self.write_data_to_file('== alert system disable ==')
+            contents = '== alert system disable =='
+            self.send_alert(message=contents, data=wds, now=date_time, level=0)
+            self.alert_en = False
+            self.issue_alert = False
         else:
-            title += ' MESSAGE from {}'.format(server_name)
+            pass
 
-        body += '\n'
-        if now is not None:
-            body += self._isotime_(now) + '\n'
-        if data is not None:
-            body += '  '.join(file_header.split('  ')[2:])
-            body += '  '.join(data)
- 
-        self.sendmail(title, body)
-
-    def sendmail(self, title, body):
-        m = make_message('gaulli_alert@{}'.format(server_name),
-	                 'User@{}'.format(server_name),
-                         title, body)
-        send_via_gmail(m)
         return
 
     pass
@@ -179,5 +142,15 @@ analert = GaulliAlert(input_file_path  = input_path,
                       interval_read   = interval_read,
                       interval_reopen = interval_reopen,
                       interval_freeze = interval_freeze)
+
+"""
+from logger_base.base import Base
+
+
+line ="2022-09-19T02:10:11.797298+00:00  1663553411.797298  1663552800.0  5.3  8.4  8.2  2.2"
+
+dt, data = Base()._divide_datetime_data_(line)
+analert.control(date_time = dt, data = data)
+"""
 
 analert.run(isDebug = isDebug)
