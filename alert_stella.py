@@ -17,7 +17,7 @@ from dome_client import DomeClient
 
 from datetime import datetime
 
-isDebug = True
+isDebug = False
 
 input_path = '/home/gb/logger/data/weather/%Y/%m/%Y%m%d_stella.raw'
 output_path = '/home/gb/logger/data/weather/%Y/%m/%Y%m%d_stella.alert'
@@ -30,6 +30,9 @@ alert_time_interval = 1800. # sec
 
 lockfile = '/home/gb/.gb_lock/alert_stella.lock'
 sockfile = '/home/gb/.gb_sock/alert_stella.sock'
+
+#lockfile = '/home/gb/alert_stella.lock'
+#sockfile = '/home/gb/alert_stella.sock'
 
 address_list_file = join(dirname(abspath(__file__)), 'mail_address_list.conf')
 
@@ -56,10 +59,15 @@ if server_name is None:
 class StellaAlert(Controller_base):
     def initialize(self):
         self.write_data_to_file('== alert system start ==')
-        # setting
-        self.to_list  = None
+        contents = '== alert system start =='
+        dt_now = datetime.now()
+        self._to_addrs = None
         self.alert_en = True
         self.issue_alert = True
+        self.send_alert(message=contents, data='  ', now=dt_now, level=0)
+        self.issue_alert = False
+        # setting
+        self.to_list  = None
         self.alert_time_interval = alert_time_interval
         self._stop_freeze = False
         # internal parameter
@@ -80,7 +88,7 @@ class StellaAlert(Controller_base):
         if self._stop_freeze:
             return
         dt_now = datetime.now()
-        self.send_alert('no update data', data=None, now=dt_now, level=1)
+        self.send_alert('no update data', data='  ', now=dt_now, level=1)
         self._stop_freeze = True
         return
 
@@ -129,7 +137,7 @@ class StellaAlert(Controller_base):
         d_wind_level = float(wds[5])/1000*3600 # km/h
         d_dust_level = float(wds[10]) # /m^3
         d_is_rain    = float(wds[9])>1e-6 # True/False
-
+        
         # info: enable/disable
         if self.issue_alert and self.alert_en:
             self.alert_en = True # temporally true to issue the alert
@@ -178,6 +186,7 @@ class StellaAlert(Controller_base):
 
         # alert: wind speed
         if d_wind_level > 45 and self.wind_level < 45:
+            #contents = 'dome close test'
             contents = 'WindSpeed >45km/h'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.wind_level = 45

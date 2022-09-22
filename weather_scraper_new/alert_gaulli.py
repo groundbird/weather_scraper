@@ -18,8 +18,8 @@ from datetime import datetime
 
 isDebug = False
 
-input_path = '/home/gb/logger/data/weather/%Y/%m/%Y%m%d_gaulli.raw'
-output_path = '/home/gb/logger/data/weather/%Y/%m/%Y%m%d_gaulli.alert'
+input_path = '/home/gb/logger/data/%Y/%m/%Y%m%d_gaulli.raw'
+output_path = '/home/gb/logger/data/%Y/%m/%Y%m%d_gaulli.alert'
 
 interval_read   = 61. # sec
 interval_reopen = 2001. # sec
@@ -51,11 +51,6 @@ class GaulliAlert(Controller_base):
         self.issue_alert = True
         self.alert_time_interval = alert_time_interval
         self._stop_freeze = False
-        self._to_addrs = None
-        contents = '== alert system start=='
-        dt_now=datetime.now()
-        self.send_alert(message=contents, data='  ', now=dt_now, level=0)
-        self.issue_alert = False
         # internal parameter
         # self.dome = DomeClient() # for dome operation
         return
@@ -68,7 +63,7 @@ class GaulliAlert(Controller_base):
         if self._stop_freeze:
             return
         dt_now = datetime.now()
-        self.send_alert('no update data', data='  ', now=dt_now, level=1)
+        self.send_alert('no update data', data=None, now=dt_now, level=1)
         self._stop_freeze = True
         return
 
@@ -82,7 +77,7 @@ class GaulliAlert(Controller_base):
         body += '  '.join(file_header.split('  ')[2:])
         body += '  '.join(data)
         
-        self.alert('gbird.auto@gmail.com', self._to_addrs, body,
+        self.alert('gbird.auto@gmial.com', self._to_addrs, body,
                    level=level, name='Gaulli',server_name=server_name)
 
         #self.alert('gbird.auto@gmail.com', 't.tanaka@astr.tohoku.ac.jp', body,
@@ -144,7 +139,7 @@ analert = GaulliAlert(input_file_path  = input_path,
                       output_file_path = output_path,
                       lock_file = lockfile,
                       sock_file = sockfile,
-                      interval_read = interval_read,
+                      interval_read   = interval_read,
                       interval_reopen = interval_reopen,
                       interval_freeze = interval_freeze)
 
