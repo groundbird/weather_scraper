@@ -172,7 +172,7 @@ class StellaAlert(Controller_base):
                 #print("dome close")
                 self.dome.close()
                 
-        if self.humd_level_interval>-1:
+        if self.humd_level_interval>-1
             self.humd_level_interval += self._interval_read_
             if self.alert_en and self.humd_level_interval>self.alert_time_interval:
                 contents = 'Humidity >85% for 30min'
@@ -235,7 +235,7 @@ class StellaAlert(Controller_base):
             pass
         
         # alert: humidity
-        if d_humd_level > 90 and self.hum_level < 90:
+        if d_humd_level > 90 and self.humd_level < 90:
             contents = 'Humidity >90%'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.humd_level = 90
@@ -249,16 +249,16 @@ class StellaAlert(Controller_base):
         if d_humd_level > 85 and self.humd_level < 85:
             contents = 'Humidity >85%'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
-            self.wind_level = 85
-            self.wind_level_interval = 0
+            self.humd_level = 85
+            self.humd_level_interval = 0
             pass
         
         if d_humd_level < 85 and self.humd_level == 85:
-            self.wind_level_interval = 0
+            self.humd_level_interval = 0
             pass
         
         if d_humd_level > 60 and self.humd_level == 60:
-            self.wind_level_interval = 0
+            self.humd_level_interval = 0
             self.send_alert('Humidity >60%', wds, date_time, level=0)
             self.humd_level = 60
             pass
