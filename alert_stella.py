@@ -60,6 +60,7 @@ class StellaAlert(Controller_base):
         self.to_list  = None
         self.alert_en = True
         self.issue_alert = True
+        self._interval_read_ = interval_read
         self.alert_time_interval = alert_time_interval
         self._stop_freeze = False
         # internal parameter
@@ -67,6 +68,8 @@ class StellaAlert(Controller_base):
         self.wind_level_interval = -1
         self.dust_level = -1
         self.dust_level_interval = -1
+        self.humd_level = -1
+        self.humd_level_interval = -1
         self.is_rain = False
         self.rain_interval = -1
         self.dome = DomeClient()
@@ -128,6 +131,7 @@ class StellaAlert(Controller_base):
         wds = data.split()
         d_wind_level = float(wds[5])/1000*3600 # km/h
         d_dust_level = float(wds[10]) # /m^3
+        d_humd_level = float(wds[2]) # %
         d_is_rain    = float(wds[9])>1e-6 # True/False
 
         # info: enable/disable
@@ -165,6 +169,15 @@ class StellaAlert(Controller_base):
                 contents = 'Dust >0.025/m3 for 15min'
                 self.send_alert(message=contents, data=wds, now=date_time, level=1)
                 self.dust_level_interval = -1
+                #print("dome close")
+                self.dome.close()
+                
+        if self.humd_level_interval>-1:
+            self.humd_level_interval += self._interval_read_
+            if self.alert_en and self.humd_level_interval>self.alert_time_interval:
+                contents = 'Humidity >85% for 30min'
+                self.send_alert(message=contents, data=wds, now=date_time, level=1)
+                self.humd_level_interval = -1
                 #print("dome close")
                 self.dome.close()
 
@@ -219,6 +232,39 @@ class StellaAlert(Controller_base):
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
             self.dust_level = 3
             self.dust_level_interval = -1
+            pass
+        
+        # alert: humidity
+        if d_humd_level > 90 and self.hum_level < 90:
+            contents = 'Humidity >90%'
+            self.send_alert(message=contents, data=wds, now=date_time, level=1)
+            self.humd_level = 90
+            if self.alert_en:
+                self.humd_level_interval = -1
+                #print("dome close")
+                self.dome.close()
+                pass
+            pass
+        
+        if d_humd_level > 85 and self.humd_level < 85:
+            contents = 'Humidity >85%'
+            self.send_alert(message=contents, data=wds, now=date_time, level=1)
+            self.wind_level = 85
+            self.wind_level_interval = 0
+            pass
+        
+        if d_humd_level < 85 and self.humd_level == 85:
+            self.wind_level_interval = 0
+            pass
+        
+        if d_humd_level > 60 and self.humd_level == 60:
+            self.wind_level_interval = 0
+            self.send_alert('Humidity >60%', wds, date_time, level=0)
+            self.humd_level = 60
+            pass
+        if d_humd_level < 40 and self.humd_level > 40:
+            self.send_alert('Humidity <40%', wds, date_time, level=0)
+            self.humd_level = 40
             pass
 
         # alert: rain
