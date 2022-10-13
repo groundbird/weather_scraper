@@ -182,7 +182,7 @@ class StellaAlert(Controller_base):
                 
         if self.humd_level_interval>-1:
             self.humd_level_interval += self._interval_read_
-            if self.alert_en and self.humdevel_interval>self.alert_time_interval:
+            if self.alert_en and self.humd_level_interval>self.alert_time_interval:
                 contents = 'Humidity >85% for 30min'
                 self.send_alert(message=contents, data=wds, now=date_time, level=1)
                 self.humd_level_interval = -1
