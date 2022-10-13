@@ -56,10 +56,15 @@ if server_name is None:
 class StellaAlert(Controller_base):
     def initialize(self):
         self.write_data_to_file('== alert system start ==')
-        # setting
-        self.to_list  = None
+        contents = '== alert system start =='
+        dt_now = datetime.now()
+        self._to_addrs = None
         self.alert_en = True
         self.issue_alert = True
+        self.send_alert(message=contents, data='  ', now=dt_now, level=0)
+        self.issue_alert = False
+        # setting
+        self.to_list  = None
         self._interval_read_ = interval_read
         self.alert_time_interval = alert_time_interval
         self._stop_freeze = False
