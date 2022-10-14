@@ -267,6 +267,7 @@ class StellaAlert(Controller_base):
             self.send_alert('Humidity >60%', wds, date_time, level=0)
             self.humd_level = 60
             pass
+
         if d_humd_level < 40 and self.humd_level > 40:
             self.send_alert('Humidity <40%', wds, date_time, level=0)
             self.humd_level = 40
