@@ -3,9 +3,11 @@ from logger_base.logger import Logger_base
 from openuni import OpenuniScraper, OpenuniDataType
 from os.path import dirname, abspath, join
 
-#output_path = '/home/gb/logger/data/weather/%Y/%m/%Y%m%d_openuni.raw'
-output_path = './%Y%m%d_openuni.raw'
+output_path = '/home/gb/logger/data/weather/%Y/%m/%Y%m%d_openuni.raw'
+#output_path = './%Y%m%d_openuni.raw'
+
 time_interval = 60
+
 file_header  = '## Localtime  Unixtime  '
 file_header += 'Update UT  '
 file_header += 'AverageWindSpeed[km/h]  '

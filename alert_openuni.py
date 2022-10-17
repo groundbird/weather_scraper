@@ -17,7 +17,7 @@ from dome_client import DomeClient
 
 from datetime import datetime
 
-isDebug = True
+isDebug = False
 
 input_path = '/home/gb/logger/data/weather/%Y/%m/%Y%m%d_openuni.raw'
 #input_path = './%Y%m%d_openuni.raw'
@@ -98,9 +98,9 @@ class OpenuniAlert(Controller_base):
         body += '  '.join(file_header.split('  ')[2:])
         body += '  '.join(data)
         self.alert('gbird.auto@gmail.com', self._to_addrs, body,
-                   level=level, name='openuni',server_name=server_name)
-	#self.alert('gbird.auto@gmail.com', 't.tanaka@astr.tohoku.ac.jp', body,
-	#          level=level, name='Gaulli',server_name=server_name)
+                   level=level, name='OpenUni',server_name=server_name)
+        #self.alert('gbird.auto@gmail.com', 't.tanaka@astr.tohoku.ac.jp', body,
+        #           level=level, name='OpenUni',server_name=server_name)
     
     def read_comm(self):
         buf = self.sock_recv()
@@ -159,17 +159,17 @@ class OpenuniAlert(Controller_base):
                 contents = 'WindSpeed >40km/h for 30min'
                 self.send_alert(message=contents, data=wds, now=date_time, level=1)
                 self.wind_level_interval = -1
-                print("dome close")
-                #self.dome.close()
+                #print("dome close")
+                self.dome.close()
 
         if self.humidity_level_interval>-1:
-            self.humidity_level_interval += 2*self._interval_read_
+            self.humidity_level_interval += self._interval_read_
             if self.alert_en and self.humidity_level_interval>self.alert_time_interval:
-                contents = 'Humidity >80% for 15min'
+                contents = 'Humidity >85% for 30min'
                 self.send_alert(message=contents, data=wds, now=date_time, level=1)
                 self.humidity_level_interval = -1
-                print("dome close")
-                #self.dome.close()
+                #print("dome close")
+                self.dome.close()
 
         if self.rain_interval>-1:
             self.rain_interval += self._interval_read_
@@ -186,8 +186,8 @@ class OpenuniAlert(Controller_base):
             self.wind_level = 45
             if self.alert_en:
                 self.wind_level_interval = -1
-                print("dome close")
-                #self.dome.close()
+                #print("dome close")
+                self.dome.close()
                 pass
             pass
         
@@ -214,25 +214,26 @@ class OpenuniAlert(Controller_base):
             self.humidity_level = 90
             self.humidity_level_interval = 0
             if self.alert_en:
-                print("dome close")
-                #self.dome.close()
+                #print("dome close")
+                self.dome.close()
             pass
-        if d_humidity_level > 80 and self.humidity_level < 80:
-            contents = 'Humidity >80%'
+        if d_humidity_level > 85 and self.humidity_level < 85:
+            contents = 'Humidity >85%'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
+            self.humd_level = 85
             self.humidity_level_interval = 0
             pass
-        if d_humidity_level > 60 and self.humidity_level < 60:
+        
+        if d_humidity_level > 60 and self.humidity_level == 60:
             contents = 'Humidity >60%'
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
             self.humidity_level = 60
-            self.humidity_level_interval = -1
             pass
-        if d_humidity_level > 50 and self.humidity_level > 50:
-            contents = 'Humidity >50%'
+        
+        if d_humidity_level < 40 and self.humidity_level > 40:
+            contents = 'Humidity <40%'
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
-            self.humidity_level = 50
-            self.humidity_level_interval = -1
+            self.humidity_level = 40
             pass
 
         # alert: rain
@@ -241,8 +242,8 @@ class OpenuniAlert(Controller_base):
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.is_rain = True
             if self.alert_en:
-                print("dome close")
-                #self.dome.close()
+                #print("dome close")
+                self.dome.close()
                 pass
             pass
         if not (d_is_rain == 'Yes') and self.is_rain:
