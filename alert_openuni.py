@@ -93,10 +93,9 @@ class OpenuniAlert(Controller_base):
             with open(address_list_file) as f:
                 self._to_addrs = [_.strip() for _ in f if _[0] != '#']
 
-        body = message + '\n'
-        body += self._isotime_(now) + '\n'
-        body += '  '.join(file_header.split('  ')[2:])
-        body += '  '.join(data)
+        body = message
+        body += '\n' + self._isotime_(now)
+        body += '\n'.join([x + ' : ' + y for x, y in zip(file_header.split('  ')[2:], data)])
         self.alert('gbird.auto@gmail.com', self._to_addrs, body,
                    level=level, name='OpenUni',server_name=server_name)
         #self.alert('gbird.auto@gmail.com', 't.tanaka@astr.tohoku.ac.jp', body,
@@ -198,20 +197,21 @@ class OpenuniAlert(Controller_base):
                 pass
             pass
         
-        if d_wind_level > 40 and self.wind_level < 40:
+        if d_wind_level > 40 and self.wind_level <= 40:
             contents = 'WindSpeed >40km/h'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.wind_level = 40
             self.wind_level_interval = 0
             pass
+
         if d_wind_level < 40 and self.wind_level == 40:
-            self.wind_level_interval = 0
+            self.wind_level_interval = -1
             pass
+        
         if d_wind_level < 30 and self.wind_level > 30:
             contents = 'WindSpeed <30km/h'
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
             self.wind_level = 30
-            self.wind_level_interval = -1
             pass
 
         # alert: Humidity
@@ -219,18 +219,33 @@ class OpenuniAlert(Controller_base):
             contents = 'Humidity >90%, Close Dome'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.humidity_level = 90
-            self.humidity_level_interval = 0
+            self.humidity_level_interval = -1
             if self.alert_en:
                 #print("dome close")
                 self.close_dome()
             pass
-        if d_humidity_level > 85 and self.humidity_level < 85:
+
+        if d_humidity_level > 85 and self.humidity_level <= 85:
             contents = 'Humidity >85%'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.humd_level = 85
             self.humidity_level_interval = 0
             pass
+       
+        if d_humidity_level < 85 and self.humidity_level == 85:
+            self.humidity_level_interval = -1
+            pass
         
+        if d_humidity_level > 80 and self.humidity_level < 80:
+            contents = 'Humidity > 80%'
+            self.send_alert(message=contents, data=wds, now=date_time, level=1)
+            self.humidity_level = 80
+            pass
+
+        if d_humidity_level < 70 and self.humidity_level == 90:
+            self.humidity_level = 70
+            pass
+
         if d_humidity_level > 60 and self.humidity_level == 60:
             contents = 'Humidity >60%'
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
