@@ -64,7 +64,7 @@ class StellaAlert(Controller_base):
         self._to_addrs = None
         self.alert_en = True
         self.issue_alert = True
-        self.send_alert(message=contents, data='  ', now=dt_now, level=0)
+        self.send_alert(message=contents, data=None, now=dt_now, level=0)
         self.issue_alert = False
         # setting
         self.to_list  = None
