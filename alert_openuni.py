@@ -128,8 +128,8 @@ class OpenuniAlert(Controller_base):
         try:
             if self.alert_en:
                 self.dome.close()
-            except:
-                self.send_alert('Dome cannot be closed.', wds, date_time, level=2)
+        except:
+            self.send_alert('Dome cannot be closed.', wds, date_time, level=2)
 
     def control(self, date_time, data):
         self._stop_freeze = False
