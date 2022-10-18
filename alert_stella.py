@@ -100,14 +100,15 @@ class StellaAlert(Controller_base):
             with open(address_list_file) as f:
                 self._to_addrs = [_.strip() for _ in f if _[0] != '#']
 
-        body = message
-        body += '\n' + self._isotime_(now)
-        body += '\n'.join([x + ' : ' + y for x, y in zip(file_header.split('  ')[2:], data)])
-
+        body = message + '\n'
+        body += self._isotime_(now) + '\n'
+        if data is not None:
+            body += '\n'.join([x + ' : ' + y for x, y in zip(file_header.split('  ')[2:], data)])
+            pass
         self.alert('gbird.auto@gmail.com', self._to_addrs, body,
                    level=level, name='Stella',server_name=server_name)
 	#self.alert('gbird.auto@gmail.com', 't.tanaka@astr.tohoku.ac.jp', body,
-	 #          level=level, name='Gaulli',server_name=server_name)
+	 #          level=level, name='Stella',server_name=server_name)
     
     def read_comm(self):
         buf = self.sock_recv()

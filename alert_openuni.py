@@ -40,7 +40,6 @@ address_list_file = join(dirname(abspath(__file__)), 'mail_address_list.conf')
 
 server_name = None
 
-
 time_interval = 60
 file_header  = '## Localtime  Unixtime  '
 file_header += 'Update UT  '
@@ -66,6 +65,9 @@ class OpenuniAlert(Controller_base):
         self.issue_alert = True
         self.alert_time_interval = alert_time_interval
         self._stop_freeze = False
+        contents = '== alert system start =='
+        dt_now = datetime.now()
+        self.send_alert(message=contents, data=None, now=dt_now, level=0) 
         # internal parameter
         self.wind_level = -1
         self.wind_level_interval = -1
@@ -93,9 +95,11 @@ class OpenuniAlert(Controller_base):
             with open(address_list_file) as f:
                 self._to_addrs = [_.strip() for _ in f if _[0] != '#']
 
-        body = message
-        body += '\n' + self._isotime_(now)
-        body += '\n'.join([x + ' : ' + y for x, y in zip(file_header.split('  ')[2:], data)])
+        body = message + '\n'
+        body += self._isotime_(now) + '\n'
+        if data is not None:
+            body += '\n'.join([x + ' : ' + y for x, y in zip(file_header.split('  ')[2:], data)])
+            pass
         self.alert('gbird.auto@gmail.com', self._to_addrs, body,
                    level=level, name='OpenUni',server_name=server_name)
         #self.alert('gbird.auto@gmail.com', 't.tanaka@astr.tohoku.ac.jp', body,
