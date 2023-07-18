@@ -250,7 +250,7 @@ class StellaAlert(Controller_base):
         if d_humd_level > 90 and self.humd_level < 90:
             contents = 'Humidity >90%'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
-            self.humd_level = 30
+            self.humd_level = 90
             if self.alert_en:
                 self.humd_level_interval = -1
                 #print("dome close")
