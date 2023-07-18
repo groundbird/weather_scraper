@@ -105,10 +105,13 @@ class StellaAlert(Controller_base):
         body += '  '.join(file_header.split('  ')[2:])
         body += '  '.join(data)
 
+        #self.alert('39gocyomu@gmail.com', self._to_addrs, body,
+         #          level=level, name='Stella',server_name=server_name)
+        
         self.alert('gbird.auto@gmail.com', self._to_addrs, body,
                    level=level, name='Stella',server_name=server_name)
-	#self.alert('gbird.auto@gmail.com', 't.tanaka@astr.tohoku.ac.jp', body,
-	 #          level=level, name='Gaulli',server_name=server_name)
+        #self.alert('39gocyomu@gmail.com', body,
+	 #          level=level, name='Stella',server_name=server_name)
     
     def read_comm(self):
         buf = self.sock_recv()
@@ -247,7 +250,7 @@ class StellaAlert(Controller_base):
         if d_humd_level > 90 and self.humd_level < 90:
             contents = 'Humidity >90%'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
-            self.humd_level = 90
+            self.humd_level = 30
             if self.alert_en:
                 self.humd_level_interval = -1
                 #print("dome close")
@@ -271,7 +274,7 @@ class StellaAlert(Controller_base):
             self.send_alert('Humidity >60%', wds, date_time, level=0)
             self.humd_level = 60
             pass
-
+    
         #if d_humd_level < 60 and self.humd_level > 60:
         #    self.send_alert('Humidity <60%', wds, date_time, level=0)
         #    self.humd_level = 60

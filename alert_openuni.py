@@ -131,6 +131,8 @@ class OpenuniAlert(Controller_base):
         wds = data.split()
         d_wind_level = float(wds[1]) # km/h
         d_humidity_level = float(wds[4]) # %
+        if d_humidity_level > 100:
+            d_humidity_level = 0
         d_is_rain    = wds[7] # Yes/No
 
         # info: enable/disable
@@ -243,7 +245,7 @@ class OpenuniAlert(Controller_base):
             self.is_rain = True
             if self.alert_en:
                 #print("dome close")
-                self.dome.close()
+                #self.dome.close()
                 pass
             pass
         if not (d_is_rain == 'Yes') and self.is_rain:
