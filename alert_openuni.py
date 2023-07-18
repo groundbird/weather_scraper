@@ -141,6 +141,8 @@ class OpenuniAlert(Controller_base):
         wds = data.split()
         d_wind_level = float(wds[1]) # km/h
         d_humidity_level = float(wds[4]) # %
+        if d_humidity_level > 100:
+            d_humidity_level = 0
         d_is_rain    = wds[7] # Yes/No
 
         # info: enable/disable

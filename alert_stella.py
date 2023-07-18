@@ -107,8 +107,6 @@ class StellaAlert(Controller_base):
             pass
         self.alert('gbird.auto@gmail.com', self._to_addrs, body,
                    level=level, name='Stella',server_name=server_name)
-	#self.alert('gbird.auto@gmail.com', 't.tanaka@astr.tohoku.ac.jp', body,
-	 #          level=level, name='Stella',server_name=server_name)
     
     def read_comm(self):
         buf = self.sock_recv()
@@ -289,7 +287,7 @@ class StellaAlert(Controller_base):
             self.send_alert('Humidity >60%', wds, date_time, level=0)
             self.humd_level = 60
             pass
-
+    
         #if d_humd_level < 60 and self.humd_level > 60:
         #    self.send_alert('Humidity <60%', wds, date_time, level=0)
         #    self.humd_level = 60

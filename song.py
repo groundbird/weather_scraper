@@ -6,8 +6,9 @@ from datetime import timezone
 from bs4 import BeautifulSoup
 from enum import IntEnum
 
-URL_SONG = 'http://song.phys.au.dk/weatherpage/'
-DTFORM_SONG = 'Last updated: %Y-%m-%d %H:%M:%S'
+#URL_SONG = 'http://song.phys.au.dk/weatherpage/'
+URL_SONG = 'https://song.phys.au.dk/tenerife/weatherpage/'
+DTFORM_SONG = 'Last updated: %Y-%m-%d %H:%M:%S UTC'
 
 class SongDataType(IntEnum):
     Temperature = 0
@@ -34,10 +35,12 @@ class SongScraper:
         val_list = []
         try:
             # Fetch table
-            tab = bs.find_all('table')[5]
+            tab = bs.find_all('table')[7]
             for tr in tab.find_all('tr'):
                 valstr = tr.find_all('td')[1].contents[0].lstrip().rstrip()
                 val_list.append(valstr)
+
+            val_list = val_list + ['100', '0'] #no data [DewPoint, Pressure]
 
             assert len(val_list) == len(SongDataType)
 
