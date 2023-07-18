@@ -40,7 +40,6 @@ address_list_file = join(dirname(abspath(__file__)), 'mail_address_list.conf')
 
 server_name = None
 
-
 time_interval = 60
 file_header  = '## Localtime  Unixtime  '
 file_header += 'Update UT  '
@@ -66,6 +65,9 @@ class OpenuniAlert(Controller_base):
         self.issue_alert = True
         self.alert_time_interval = alert_time_interval
         self._stop_freeze = False
+        contents = '== alert system start =='
+        dt_now = datetime.now()
+        self.send_alert(message=contents, data=None, now=dt_now, level=0) 
         # internal parameter
         self.wind_level = -1
         self.wind_level_interval = -1
@@ -95,8 +97,9 @@ class OpenuniAlert(Controller_base):
 
         body = message + '\n'
         body += self._isotime_(now) + '\n'
-        body += '  '.join(file_header.split('  ')[2:])
-        body += '  '.join(data)
+        if data is not None:
+            body += '\n'.join([x + ' : ' + y for x, y in zip(file_header.split('  ')[2:], data)])
+            pass
         self.alert('gbird.auto@gmail.com', self._to_addrs, body,
                    level=level, name='OpenUni',server_name=server_name)
         #self.alert('gbird.auto@gmail.com', 't.tanaka@astr.tohoku.ac.jp', body,
@@ -123,7 +126,14 @@ class OpenuniAlert(Controller_base):
             pass
 
         return
-         
+        
+    def close_dome(self):
+        try:
+            if self.alert_en:
+                self.dome.close()
+        except:
+            self.send_alert('Dome cannot be closed.', wds, date_time, level=2)
+
     def control(self, date_time, data):
         self._stop_freeze = False
         self.read_comm()
@@ -162,7 +172,7 @@ class OpenuniAlert(Controller_base):
                 self.send_alert(message=contents, data=wds, now=date_time, level=1)
                 self.wind_level_interval = -1
                 #print("dome close")
-                self.dome.close()
+                self.close_dome()
 
         if self.humidity_level_interval>-1:
             self.humidity_level_interval += self._interval_read_
@@ -171,7 +181,7 @@ class OpenuniAlert(Controller_base):
                 self.send_alert(message=contents, data=wds, now=date_time, level=1)
                 self.humidity_level_interval = -1
                 #print("dome close")
-                self.dome.close()
+                self.close_dome()
 
         if self.rain_interval>-1:
             self.rain_interval += self._interval_read_
@@ -189,24 +199,25 @@ class OpenuniAlert(Controller_base):
             if self.alert_en:
                 self.wind_level_interval = -1
                 #print("dome close")
-                self.dome.close()
+                self.close_dome()
                 pass
             pass
         
-        if d_wind_level > 40 and self.wind_level < 40:
+        if d_wind_level > 40 and self.wind_level <= 40:
             contents = 'WindSpeed >40km/h'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.wind_level = 40
             self.wind_level_interval = 0
             pass
+
         if d_wind_level < 40 and self.wind_level == 40:
-            self.wind_level_interval = 0
+            self.wind_level_interval = -1
             pass
+        
         if d_wind_level < 30 and self.wind_level > 30:
             contents = 'WindSpeed <30km/h'
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
             self.wind_level = 30
-            self.wind_level_interval = -1
             pass
 
         # alert: Humidity
@@ -214,18 +225,33 @@ class OpenuniAlert(Controller_base):
             contents = 'Humidity >90%, Close Dome'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.humidity_level = 90
-            self.humidity_level_interval = 0
+            self.humidity_level_interval = -1
             if self.alert_en:
                 #print("dome close")
-                self.dome.close()
+                self.close_dome()
             pass
-        if d_humidity_level > 85 and self.humidity_level < 85:
+
+        if d_humidity_level > 85 and self.humidity_level <= 85:
             contents = 'Humidity >85%'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.humd_level = 85
             self.humidity_level_interval = 0
             pass
+       
+        if d_humidity_level < 85 and self.humidity_level == 85:
+            self.humidity_level_interval = -1
+            pass
         
+        if d_humidity_level > 80 and self.humidity_level < 80:
+            contents = 'Humidity > 80%'
+            self.send_alert(message=contents, data=wds, now=date_time, level=1)
+            self.humidity_level = 80
+            pass
+
+        if d_humidity_level < 70 and self.humidity_level == 90:
+            self.humidity_level = 70
+            pass
+
         if d_humidity_level > 60 and self.humidity_level == 60:
             contents = 'Humidity >60%'
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
@@ -245,7 +271,7 @@ class OpenuniAlert(Controller_base):
             self.is_rain = True
             if self.alert_en:
                 #print("dome close")
-                #self.dome.close()
+                self.close_dome()
                 pass
             pass
         if not (d_is_rain == 'Yes') and self.is_rain:
@@ -257,7 +283,7 @@ class OpenuniAlert(Controller_base):
     pass
 
 analert = OpenuniAlert(input_file_path  = input_path,
-                      output_file_path = output_path,
+                       output_file_path = output_path,
                       lock_file = lockfile,
                       sock_file = sockfile,
                       interval_read   = interval_read,

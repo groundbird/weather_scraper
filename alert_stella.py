@@ -64,7 +64,7 @@ class StellaAlert(Controller_base):
         self._to_addrs = None
         self.alert_en = True
         self.issue_alert = True
-        self.send_alert(message=contents, data='  ', now=dt_now, level=0)
+        self.send_alert(message=contents, data=None, now=dt_now, level=0)
         self.issue_alert = False
         # setting
         self.to_list  = None
@@ -102,16 +102,11 @@ class StellaAlert(Controller_base):
 
         body = message + '\n'
         body += self._isotime_(now) + '\n'
-        body += '  '.join(file_header.split('  ')[2:])
-        body += '  '.join(data)
-
-        #self.alert('39gocyomu@gmail.com', self._to_addrs, body,
-         #          level=level, name='Stella',server_name=server_name)
-        
+        if data is not None:
+            body += '\n'.join([x + ' : ' + y for x, y in zip(file_header.split('  ')[2:], data)])
+            pass
         self.alert('gbird.auto@gmail.com', self._to_addrs, body,
                    level=level, name='Stella',server_name=server_name)
-        #self.alert('39gocyomu@gmail.com', body,
-	 #          level=level, name='Stella',server_name=server_name)
     
     def read_comm(self):
         buf = self.sock_recv()
@@ -134,7 +129,14 @@ class StellaAlert(Controller_base):
             pass
 
         return
-         
+    
+    def close_dome(self):
+        try:
+            if self.alert_en:
+                self.dome.close()
+        except:
+            self.send_alert('Dome cannot be closed.', wds, date_time, level=2)
+
     def control(self, date_time, data):
         self._stop_freeze = False
         self.read_comm()
@@ -172,7 +174,7 @@ class StellaAlert(Controller_base):
                 self.send_alert(message=contents, data=wds, now=date_time, level=1)
                 self.wind_level_interval = -1
                 #print("dome close")
-                self.dome.close()
+                self.close_dome()
 
         if self.dust_level_interval>-1:
             self.dust_level_interval += 2*self._interval_read_
@@ -181,7 +183,7 @@ class StellaAlert(Controller_base):
                 self.send_alert(message=contents, data=wds, now=date_time, level=1)
                 self.dust_level_interval = -1
                 #print("dome close")
-                self.dome.close()
+                self.close_dome()
                 
         if self.humd_level_interval>-1:
             self.humd_level_interval += self._interval_read_
@@ -190,7 +192,7 @@ class StellaAlert(Controller_base):
                 self.send_alert(message=contents, data=wds, now=date_time, level=1)
                 self.humd_level_interval = -1
                 #print("dome close")
-                self.dome.close()
+                self.close_dome()
 
         if self.rain_interval>-1:
             self.rain_interval += self._interval_read_
@@ -209,41 +211,43 @@ class StellaAlert(Controller_base):
             if self.alert_en:
                 self.wind_level_interval = -1
                 #print("dome close")
-                self.dome.close()
+                self.close_dome()
                 pass
             pass
         
-        if d_wind_level > 40 and self.wind_level < 40:
+        if d_wind_level > 40 and self.wind_level <= 40:
             contents = 'WindSpeed >40km/h'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.wind_level = 40
             self.wind_level_interval = 0
             pass
+        
         if d_wind_level < 40 and self.wind_level == 40:
-            self.wind_level_interval = 0
+            self.wind_level_interval = -1
             pass
+
         if d_wind_level < 30 and self.wind_level > 30:
             contents = 'WindSpeed <30km/h'
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
             self.wind_level = 30
-            self.wind_level_interval = -1
             pass
 
         # alert: dust
-        if d_dust_level > 0.025 and self.dust_level < 25:
+        if d_dust_level > 0.025 and self.dust_level <= 25:
             contents = 'Dust >0.025/m3'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.dust_level = 25
             self.dust_level_interval = 0
             pass
+
         if d_dust_level < 0.025 and self.dust_level == 25:
-            self.dust_level_interval = 0
+            self.dust_level_interval = -1
             pass
+        
         if d_dust_level < 0.003 and self.dust_level > 3:
             contents = 'Dust <0.003/m3'
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
             self.dust_level = 3
-            self.dust_level_interval = -1
             pass
         
         # alert: humidity
@@ -254,11 +258,11 @@ class StellaAlert(Controller_base):
             if self.alert_en:
                 self.humd_level_interval = -1
                 #print("dome close")
-                self.dome.close()
+                self.close_dome()
                 pass
             pass
         
-        if d_humd_level > 85 and self.humd_level < 85:
+        if d_humd_level > 85 and self.humd_level <= 85:
             contents = 'Humidity >85%'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.humd_level = 85
@@ -266,11 +270,20 @@ class StellaAlert(Controller_base):
             pass
         
         if d_humd_level < 85 and self.humd_level == 85:
-            self.humd_level_interval = 0
+            self.humd_level_interval = -1
+            pass
+
+        if d_humd_level > 80 and self.humd_level < 80:
+            contents = 'Humidity > 80%'
+            self.send_alert(message=contents, data=wds, now=data_time, level=1)
+            self.humd_level = 80
+            pass
+
+        if d_humd_level < 70 and self.humd_level == 90:
+            self.humd_level = 70
             pass
         
         if d_humd_level > 60 and self.humd_level == 60:
-            self.humd_level_interval = 0
             self.send_alert('Humidity >60%', wds, date_time, level=0)
             self.humd_level = 60
             pass
@@ -292,7 +305,7 @@ class StellaAlert(Controller_base):
             self.is_rain = True
             if self.alert_en:
                 #print("dome close")
-                self.dome.close()
+                self.close_dome()
                 pass
             pass
         if not d_is_rain and self.is_rain:
