@@ -65,6 +65,7 @@ class OpenuniAlert(Controller_base):
         self.issue_alert = True
         self.alert_time_interval = alert_time_interval
         self._stop_freeze = False
+        self._interval_read_ = interval_read
         contents = '== alert system start =='
         dt_now = datetime.now()
         self.send_alert(message=contents, data=None, now=dt_now, level=0) 
