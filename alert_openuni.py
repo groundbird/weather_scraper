@@ -25,7 +25,7 @@ output_path = '/home/gb/logger/data/weather/%Y/%m/%Y%m%d_openuni.alert'
 #output_path = './%Y%m%d_openuni.alert'
 
 interval_read   = 61. # sec
-interval_reopen = 70#351. # sec
+interval_reopen = 351. # sec
 interval_freeze = 1501. # sec
 
 alert_time_interval = 1800. # sec
