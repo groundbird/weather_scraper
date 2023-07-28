@@ -255,19 +255,19 @@ class OpenuniAlert(Controller_base):
             self.humidity_level = 40
             pass
 
-        # alert: rain
-        if (d_is_rain == 'Yes') and not self.is_rain:
-            contents = 'Rain detected at openuni'
-            self.send_alert(message=contents, data=wds, now=date_time, level=1)
-            self.is_rain = True
-            if self.alert_en:
-                #print("dome close")
-                #self.dome.close()
-                pass
-            pass
-        if not (d_is_rain == 'Yes') and self.is_rain:
-            self.rain_interval = 0
-            pass
+        # # alert: rain
+        # if (d_is_rain == 'Yes') and not self.is_rain:
+        #     contents = 'Rain detected at openuni'
+        #     self.send_alert(message=contents, data=wds, now=date_time, level=1)
+        #     self.is_rain = True
+        #     if self.alert_en:
+        #         #print("dome close")
+        #         #self.dome.close()
+        #         pass
+        #     pass
+        # if not (d_is_rain == 'Yes') and self.is_rain:
+        #     self.rain_interval = 0
+        #     pass
 
         return
 
