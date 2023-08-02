@@ -274,7 +274,6 @@ class StellaAlert(Controller_base):
                     self.dome.close()
                 except:
                     self.send_alert(message='Dome cannot be closed',data= wds,now=date_time, level=2)
-
             pass
 
         if d_humd_level > 85 and self.humd_level < 85:
@@ -288,17 +287,8 @@ class StellaAlert(Controller_base):
             self.humd_level_interval = -1
             pass
 
-        if d_humd_level > 80 and self.humd_level < 80:
-            contents = 'Humidity > 80%'
-            self.send_alert(message=contents, data=wds, now=data_time, level=1)
-            self.humd_level = 80
-            pass
-
-        if d_humd_level < 70 and self.humd_level == 90:
-            self.humd_level = 70
-            pass
-
-        if d_humd_level > 60 and self.humd_level == 60:
+        if d_humd_level > 60 and self.humd_level < 60:
+            self.humd_level_interval = 0
             self.send_alert('Humidity >60%', wds, date_time, level=0)
             self.humd_level = 60
             pass
