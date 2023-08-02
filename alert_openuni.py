@@ -292,3 +292,5 @@ analert = OpenuniAlert(input_file_path  = input_path,
                       interval_freeze = interval_freeze)
 
 analert.run(isDebug = isDebug)
+
+
