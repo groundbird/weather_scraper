@@ -64,7 +64,7 @@ class StellaAlert(Controller_base):
         self._to_addrs = None
         self.alert_en = True
         self.issue_alert = True
-        self.send_alert(message=contents, data='  ', now=dt_now, level=0)
+        self.send_alert(message=contents, data=None, now=dt_now, level=0)
         self.issue_alert = False
         # setting
         self.to_list  = None
@@ -110,7 +110,7 @@ class StellaAlert(Controller_base):
 
         self.alert('gbird.auto@gmail.com', self._to_addrs, body,
                    level=level, name='Stella',server_name=server_name)
-
+  
     def read_comm(self):
         buf = self.sock_recv()
         if buf is None: return
@@ -176,6 +176,7 @@ class StellaAlert(Controller_base):
                     self.send_alert(message='Dome cannot be closed',data= wds,now=date_time, level=2)
             pass
 
+
         if self.dust_level_interval>-1:
             self.dust_level_interval += 2*self._interval_read_
             if self.alert_en and self.dust_level_interval>self.alert_time_interval:
@@ -187,8 +188,7 @@ class StellaAlert(Controller_base):
                 except:
                    self.send_alert(message='Dome cannot be closed',data= wds,now=date_time, level=2)
             pass
-
-
+          
         if self.humd_level_interval>-1:
             self.humd_level_interval += self._interval_read_
             if self.alert_en and self.humd_level_interval>self.alert_time_interval:
@@ -201,7 +201,6 @@ class StellaAlert(Controller_base):
                 except:
                     self.send_alert(message='Dome cannot be closed',data= wds,now=date_time, level=2)
             pass
-
 
         if self.rain_interval>-1:
             self.rain_interval += self._interval_read_
@@ -220,7 +219,6 @@ class StellaAlert(Controller_base):
             if self.alert_en:
                 self.wind_level_interval = -1
                 #print("dome close")
-
                 try:
                     self.dome.close()
                 except:
@@ -234,31 +232,33 @@ class StellaAlert(Controller_base):
             self.wind_level = 40
             self.wind_level_interval = 0
             pass
+        
         if d_wind_level < 40 and self.wind_level == 40:
-            self.wind_level_interval = 0
+            self.wind_level_interval = -1
             pass
+
         if d_wind_level < 30 and self.wind_level > 30:
             contents = 'WindSpeed <30km/h'
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
             self.wind_level = 30
-            self.wind_level_interval = -1
             pass
 
         # alert: dust
-        if d_dust_level > 0.025 and self.dust_level < 25:
+        if d_dust_level > 0.025 and self.dust_level <= 25:
             contents = 'Dust >0.025/m3'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.dust_level = 25
             self.dust_level_interval = 0
             pass
+
         if d_dust_level < 0.025 and self.dust_level == 25:
-            self.dust_level_interval = 0
+            self.dust_level_interval = -1
             pass
+        
         if d_dust_level < 0.003 and self.dust_level > 3:
             contents = 'Dust <0.003/m3'
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
             self.dust_level = 3
-            self.dust_level_interval = -1
             pass
 
         # alert: humidity
@@ -285,11 +285,20 @@ class StellaAlert(Controller_base):
             pass
 
         if d_humd_level < 85 and self.humd_level == 85:
-            self.humd_level_interval = 0
+            self.humd_level_interval = -1
+            pass
+
+        if d_humd_level > 80 and self.humd_level < 80:
+            contents = 'Humidity > 80%'
+            self.send_alert(message=contents, data=wds, now=data_time, level=1)
+            self.humd_level = 80
+            pass
+
+        if d_humd_level < 70 and self.humd_level == 90:
+            self.humd_level = 70
             pass
 
         if d_humd_level > 60 and self.humd_level == 60:
-            self.humd_level_interval = 0
             self.send_alert('Humidity >60%', wds, date_time, level=0)
             self.humd_level = 60
             pass
