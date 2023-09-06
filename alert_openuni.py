@@ -272,7 +272,6 @@ class OpenuniAlert(Controller_base):
         # if not (d_is_rain == 'Yes') and self.is_rain:
         #     self.rain_interval = 0
         #     pass
->>>>>>> 16a6632e0b9236c956144a86678745f1c7f11be3
 
         return
 
