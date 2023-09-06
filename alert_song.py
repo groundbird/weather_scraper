@@ -61,6 +61,7 @@ class SongAlert(Controller_base):
         self.issue_alert = True
         self.alert_time_interval = alert_time_interval
         self._stop_freeze = False
+        self._interval_read_ = interval_read
         # internal parameter
         self.wind_level = -1
         self.wind_level_interval = -1
@@ -96,8 +97,8 @@ class SongAlert(Controller_base):
         body += self._isotime_(now) + '\n'
         body += '\n'.join([x+' : ' + y for x, y in zip(file_header.split('  ')[2:], data)])
 
-    self.alert('gbird.auto@gmail.com', self._to_addrs, body,
-                   level=level, name='Song',server_name=server_name)
+        self.alert('gbird.auto@gmail.com', self._to_addrs, body,
+                    level=level, name='Song',server_name=server_name)
 
         #self.alert('gbird.auto@gmail.com', 't.tanaka@astr.tohoku.ac.jp', body,
          #          level=level, name='Gaulli',server_name=server_name)
@@ -154,15 +155,18 @@ class SongAlert(Controller_base):
             pass
 
 
-        # alert with time interval
-        if self.wind_level_interval>-1:
-            self.wind_level_interval += self._interval_read_
-            if self.alert_en and self.wind_level_interval>self.alert_time_interval:
-                contents = 'WindSpeed >40km/h for 30min'
-                self.send_alert(message=contents, data=wds, now=date_time, level=1)
-                self.wind_level_interval = -1
-                #print("dome close")
-                self.dome.close()
+        # # alert with time interval
+        # if self.wind_level_interval>-1:
+        #     self.wind_level_interval += self._interval_read_
+        #     if self.alert_en and self.wind_level_interval>self.alert_time_interval:
+        #         contents = 'WindSpeed >40km/h for 30min'
+        #         self.send_alert(message=contents, data=wds, now=date_time, level=1)
+        #         self.wind_level_interval = -1
+                # #print("dome close")
+                # try:
+                #     self.dome.close()
+                # except:
+                #     self.send_alert(message='Dome cannot be closed',data= wds,now=date_time, level=2)
 
         if self.humidity_level_interval>-1:
             self.humidity_level_interval += self._interval_read_
@@ -171,7 +175,22 @@ class SongAlert(Controller_base):
                 self.send_alert(message=contents, data=wds, now=date_time, level=1)
                 self.humidity_level_interval = -1
                 #print("dome close")
-                self.dome.close()
+                # try:
+                #     self.dome.close()
+                # except:
+                #     self.send_alert(message='Dome cannot be closed',data= wds,now=date_time, level=2)
+
+        if self.dust_level_interval>-1:
+            self.dust_level_interval += 2*self._interval_read_
+            if self.alert_en and self.dust_level_interval>self.alert_time_interval:
+                contents = 'Dust >0.025/m3 for 15min'
+                self.send_alert(message=contents, data=wds, now=date_time, level=1)
+                self.dust_level_interval = -1
+                try:
+                    self.dome.close()
+                except:
+                   self.send_alert(message='Dome cannot be closed',data= wds,now=date_time, level=2)
+            pass
 
         if self.rain_interval>-1:
             self.rain_interval += self._interval_read_
@@ -182,42 +201,66 @@ class SongAlert(Controller_base):
                 self.is_rain = False
 
         # alert: wind speed
-        if d_wind_level > 45 and self.wind_level < 45:
-            contents = 'WindSpeed >45km/h'
+        # if d_wind_level > 45 and self.wind_level < 45:
+        #     contents = 'WindSpeed >45km/h'
+        #     self.send_alert(message=contents, data=wds, now=date_time, level=1)
+        #     self.wind_level = 45
+        #     self.wind_level_interval = -1
+        #     if self.alert_en:
+                # try:
+                #     self.dome.close()
+                # except:
+                #     self.send_alert(message='Dome cannot be closed',data= wds,now=date_time, level=2)
+            #     pass
+            # pass
+
+        # if d_wind_level > 40 and self.wind_level < 40:
+        #     contents = 'WindSpeed >40km/h'
+        #     self.send_alert(message=contents, data=wds, now=date_time, level=1)
+        #     self.wind_level = 40
+        #     self.wind_level_interval = 0
+        #     pass
+
+        # if d_wind_level < 40 and self.wind_level == 40:
+        #     self.wind_level_interval = -1
+        #     pass
+
+        # if d_wind_level < 20 and self.wind_level > 20:
+        #     contents = 'WindSpeed <20km/h'
+        #     self.send_alert(message=contents, data=wds, now=date_time, level=0)
+        #     self.wind_level = 20
+        #     self.wind_level_interval = -1
+        #     pass
+
+        # alert: dust
+        if d_dust_level > 0.025 and self.dust_level <= 25:
+            contents = 'Dust >0.025/m3'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
-            self.wind_level = 45
-            if self.alert_en:
-                self.wind_level_interval = -1
-                #print("dome close")
-                self.dome.close()
-                pass
+            self.dust_level = 25
+            self.dust_level_interval = 0
             pass
 
-        if d_wind_level > 40 and self.wind_level < 40:
-            contents = 'WindSpeed >40km/h'
-            self.send_alert(message=contents, data=wds, now=date_time, level=1)
-            self.wind_level = 40
-            self.wind_level_interval = 0
+        if d_dust_level < 0.025 and self.dust_level == 25:
+            self.dust_level_interval = -1
             pass
-        if d_wind_level < 40 and self.wind_level == 40:
-            self.wind_level_interval = 0
-            pass
-        if d_wind_level < 30 and self.wind_level > 30:
-            contents = 'WindSpeed <30km/h'
+
+        if d_dust_level < 0.003 and self.dust_level > 3:
+            contents = 'Dust <0.003/m3'
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
-            self.wind_level = 30
-            self.wind_level_interval = -1
+            self.dust_level = 3
             pass
-
 
         # alert: Humidity
         if d_humidity_level > 90 and self.humidity_level < 90:
             contents = 'Humidity >90%, Close Dome'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.humidity_level = 90
-            self.humidity_level_interval = 0
+            self.humidity_level_interval = -1
             if self.alert_en:
-                self.dome.close()
+                try:
+                    self.dome.close()
+                except:
+                    self.send_alert(message='Dome cannot be closed',data= wds,now=date_time, level=2)
                 pass
 
         if d_humidity_level > 85 and self.humidity_level < 85:
@@ -256,8 +299,10 @@ class SongAlert(Controller_base):
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.is_rain = True
             if self.alert_en:
-                #print("dome close")
-                # self.dome.close()
+                # try:
+                #     self.dome.close()
+                # except:
+                #     self.send_alert(message='Dome cannot be closed',data= wds,now=date_time, level=2)
                 pass
             pass
 
