@@ -68,7 +68,7 @@ class OpenuniAlert(Controller_base):
         self._interval_read_ = interval_read
         contents = '== alert system start =='
         dt_now = datetime.now()
-        self.send_alert(message=contents, data=None, now=dt_now, level=0) 
+        self.send_alert(message=contents, data=None, now=dt_now, level=0)
         # internal parameter
         self.wind_level = -1
         self.wind_level_interval = -1
@@ -171,7 +171,7 @@ class OpenuniAlert(Controller_base):
                 self.send_alert(message=contents, data=wds, now=date_time, level=1)
                 self.wind_level_interval = -1
                 #print("dome close")
-                self.close_dome()
+                self.dome.close()
 
         if self.humidity_level_interval>-1:
             self.humidity_level_interval += self._interval_read_
@@ -180,7 +180,7 @@ class OpenuniAlert(Controller_base):
                 self.send_alert(message=contents, data=wds, now=date_time, level=1)
                 self.humidity_level_interval = -1
                 #print("dome close")
-                self.close_dome()
+                self.dome.close()
 
         if self.rain_interval>-1:
             self.rain_interval += self._interval_read_
@@ -198,10 +198,10 @@ class OpenuniAlert(Controller_base):
             if self.alert_en:
                 self.wind_level_interval = -1
                 #print("dome close")
-                self.close_dome()
+                self.dome.close()
                 pass
             pass
-          
+
         if d_wind_level > 40 and self.wind_level < 40:
             contents = 'WindSpeed >40km/h'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
@@ -212,7 +212,7 @@ class OpenuniAlert(Controller_base):
         if d_wind_level < 40 and self.wind_level == 40:
             self.wind_level_interval = -1
             pass
-        
+
         if d_wind_level < 30 and self.wind_level > 30:
             contents = 'WindSpeed <30km/h'
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
@@ -227,7 +227,7 @@ class OpenuniAlert(Controller_base):
             self.humidity_level_interval = -1
             if self.alert_en:
                 #print("dome close")
-                self.close_dome()
+                self.dome.close()
             pass
 
         if d_humidity_level > 85 and self.humidity_level < 85:
@@ -258,7 +258,7 @@ class OpenuniAlert(Controller_base):
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
             self.humidity_level = 40
             pass
-            
+
         # # alert: rain
         # if (d_is_rain == 'Yes') and not self.is_rain:
         #     contents = 'Rain detected at openuni'
