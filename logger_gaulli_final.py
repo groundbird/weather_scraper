@@ -6,7 +6,7 @@ import datetime
 from logger_base.find_data_file import find_latest_file
 
 output_path = '/home/gb/logger/data/weather/%Y/%m/%Y%m%d_gaulli_final.raw'
-time_interval = 60*60 # taken every 1 hour
+time_interval = 60*60*24 # taken every 1 day
 file_header  = '## Localtime  Unixtime  '
 file_header += 'Update UT  '
 file_header += 'PWV final[mm]  '
@@ -22,7 +22,7 @@ sockfile = join(dirname(abspath(__file__)), '.logger_gaulli_final.sock')
 
 class LoggerGaulliFinal(Logger_base):
     def initialize(self):
-        self.dev = GaulliDownloader(pwv_type='p',num_days=5)
+        self.dev = GaulliDownloader(pwv_type='p',num_days=30)
         self.last_update = None
         f = find_latest_file(self._output_file_path_)
         if f is not None:
@@ -70,5 +70,5 @@ if __name__ == '__main__':
                                lock_file=lockfile,
                                sock_file=sockfile,
                                interval_sec=time_interval)
-    
+
     logger.run(isDebug=True)

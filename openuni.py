@@ -38,7 +38,11 @@ class OpenuniScraper:
             tab = bs.find_all('table')[0]
             for i,tr in enumerate(tab.find_all('tr')[1:]):
                 if i < 6:
-                    val_list.append(float(tr.find_all('td')[1].contents[0].split(' ')[0]))
+                    val = tr.find_all('td')[1].contents[0].split(' ')[0]
+                    if val == '?':
+                        val_list.append(float(-999))
+                    else:
+                        val_list.append(float(val))
                 elif i == 6:
                     val_list.append(tr.find_all('td')[1].contents[0].split(' ')[0])
             assert len(val_list) == len(OpenuniDataType)
