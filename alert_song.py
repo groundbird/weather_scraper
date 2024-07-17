@@ -19,7 +19,6 @@ from datetime import datetime
 
 isDebug = False
 
-
 input_path = '/home/gb/logger/data/weather/%Y/%m/%Y%m%d_song.raw'
 output_path = '/home/gb/logger/data/weather/%Y/%m/%Y%m%d_song.alert'
 
@@ -27,7 +26,7 @@ interval_read   = 61. # sec
 interval_reopen = 801. # sec
 interval_freeze = 2341. # sec
 
-alert_time_interval = 1800. # sec
+alert_time_interval = 3600. # sec
 
 lockfile = '/home/gb/.gb_lock/alert_song.lock'
 sockfile = '/home/gb/.gb_sock/alert_song.sock'
@@ -61,20 +60,9 @@ class SongAlert(Controller_base):
         self.issue_alert = True
         self.alert_time_interval = alert_time_interval
         self._stop_freeze = False
-        self._interval_read_ = interval_read
         # internal parameter
-        self.wind_level = -1
-        self.wind_level_interval = -1
-        self.humidity_level = -1
-        self.humidity_level_interval = -1
-        self.dust_level = -1
-        self.dust_level_interval = -1
-        self.is_rain = False
-        self.rain_interval = -1
-
-        self.dome = DomeClient()
+        # self.dome = DomeClient() # for dome operation
         return
-
 
     def finalize(self):
         self.write_data_to_file('== alert system stop ==')
@@ -89,16 +77,17 @@ class SongAlert(Controller_base):
         return
 
     def send_alert(self, message, data, now, level):
-        if self.to_list is None:
+        if self._to_addrs is None:
             with open(address_list_file) as f:
                 self._to_addrs = [_.strip() for _ in f if _[0] != '#']
 
         body = message + '\n'
-        body += self._isotime_(now) + '\n'
-        body += '\n'.join([x+' : ' + y for x, y in zip(file_header.split('  ')[2:], data)])
+	body += self._isotime_(now) + '\n'
+        body += '  '.join(file_header.split('  ')[2:])
+        body += '  '.join(data)
 
-        self.alert('gbird.auto@gmail.com', self._to_addrs, body,
-                    level=level, name='Song',server_name=server_name)
+	self.alert('gbird.auto@gmail.com', self._to_addrs, body,
+                   level=level, name='Song',server_name=server_name)
 
         #self.alert('gbird.auto@gmail.com', 't.tanaka@astr.tohoku.ac.jp', body,
          #          level=level, name='Gaulli',server_name=server_name)
@@ -120,39 +109,41 @@ class SongAlert(Controller_base):
                 pass
             pass
         except Exception as e:
+            #print(e)
             pass
 
         return
-
+         
     def control(self, date_time, data):
         self._stop_freeze = False
         self.read_comm()
 
         wds = data.split()
 
+<<<<<<< HEAD
         d_wind_level = float(wds[3])/1000*3600 # km/h
         d_dust_level = float(wds[6]) # /m^3
         d_humidity_level = float(wds[2]) # %
         d_is_rain    = wds[4] # Yes/No
 
+=======
+>>>>>>> parent of 8abeb0a (Merge pull request #7 from groundbird/debug)
         # info: enable/disable
         if self.issue_alert and self.alert_en:
             self.alert_en = True # temporally true to issue the alert
             self.write_data_to_file('== alert system enable ==')
-            contents = '== alert system enable =='
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
             self.issue_alert = False
-
         elif self.issue_alert and not self.alert_en:
             self.alert_en = True # temporally true to issue the alert
             self.write_data_to_file('== alert system disable ==')
-            contents = '== alert system disable =='
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
             self.alert_en = False
             self.issue_alert = False
         else:
             pass
 
+<<<<<<< HEAD
 
         # # alert with time interval
         # if self.wind_level_interval>-1:
@@ -310,6 +301,8 @@ class SongAlert(Controller_base):
             self.rain_interval = 0
             pass
 
+=======
+>>>>>>> parent of 8abeb0a (Merge pull request #7 from groundbird/debug)
         return
 
     pass

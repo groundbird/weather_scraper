@@ -101,12 +101,24 @@ class StellaAlert(Controller_base):
 
         body = message + '\n'
         body += self._isotime_(now) + '\n'
+<<<<<<< HEAD
         if data is not None:
             body += '\n'.join([x + ' : ' + y for x, y in zip(file_header.split('  ')[2:], data)])
             pass
         self.alert('gbird.auto@gmail.com', self._to_addrs, body,
                    level=level, name='Stella',server_name=server_name)
     
+=======
+        body += '  '.join(file_header.split('  ')[2:])
+        body += '  '.join(data)
+
+#        self.alert('39gocyomu@gmail.com', '39gocyomu@gmail.com', body,
+#                   level=level, name='Stella',server_name=server_name)
+
+        self.alert('gbird.auto@gmail.com', self._to_addrs, body,
+                   level=level, name='Stella',server_name=server_name)
+  
+>>>>>>> parent of 8abeb0a (Merge pull request #7 from groundbird/debug)
     def read_comm(self):
         buf = self.sock_recv()
         if buf is None: return
@@ -175,15 +187,25 @@ class StellaAlert(Controller_base):
                 #print("dome close")
                 self.close_dome()
 
+
         if self.dust_level_interval>-1:
             self.dust_level_interval += 2*self._interval_read_
             if self.alert_en and self.dust_level_interval>self.alert_time_interval:
                 contents = 'Dust >0.025/m3 for 15min'
                 self.send_alert(message=contents, data=wds, now=date_time, level=1)
                 self.dust_level_interval = -1
+<<<<<<< HEAD
                 #print("dome close")
                 self.close_dome()
                 
+=======
+                try:
+                    self.dome.close()
+                except:
+                   self.send_alert(message='Dome cannot be closed',data= wds,now=date_time, level=2)
+            pass
+          
+>>>>>>> parent of 8abeb0a (Merge pull request #7 from groundbird/debug)
         if self.humd_level_interval>-1:
             self.humd_level_interval += self._interval_read_
             if self.alert_en and self.humd_level_interval>self.alert_time_interval:
@@ -191,7 +213,15 @@ class StellaAlert(Controller_base):
                 self.send_alert(message=contents, data=wds, now=date_time, level=1)
                 self.humd_level_interval = -1
                 #print("dome close")
+<<<<<<< HEAD
                 self.close_dome()
+=======
+                try:
+                    self.dome.close()
+                except:
+                    self.send_alert(message='Dome cannot be closed',data= wds,now=date_time, level=2)
+            pass
+>>>>>>> parent of 8abeb0a (Merge pull request #7 from groundbird/debug)
 
         if self.rain_interval>-1:
             self.rain_interval += self._interval_read_
@@ -257,8 +287,15 @@ class StellaAlert(Controller_base):
             if self.alert_en:
                 self.humd_level_interval = -1
                 #print("dome close")
+<<<<<<< HEAD
                 self.close_dome()
                 pass
+=======
+                try:
+                    self.dome.close()
+                except:
+                    self.send_alert(message='Dome cannot be closed',data= wds,now=date_time, level=2)
+>>>>>>> parent of 8abeb0a (Merge pull request #7 from groundbird/debug)
             pass
         
         if d_humd_level > 85 and self.humd_level < 85:
