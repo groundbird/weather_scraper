@@ -131,7 +131,7 @@ class SongAlert(Controller_base):
         wds = data.split()
 
         d_wind_level = float(wds[3])/1000*3600 # km/h
-        d_dust_level = float(wds[6]) # /m^3
+        d_dust_level = float(wds[6]) # /m^3 ? maybe correct
         d_humidity_level = float(wds[2]) # %
         d_is_rain    = wds[4] # Yes/No
 
@@ -141,6 +141,7 @@ class SongAlert(Controller_base):
             self.write_data_to_file('== alert system enable ==')
             contents = '== alert system enable =='
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
+            self.alert_en = True
             self.issue_alert = False
 
         elif self.issue_alert and not self.alert_en:
@@ -200,7 +201,6 @@ class SongAlert(Controller_base):
                 self.is_rain = False
 
         # alert: wind speed
-        # recorded WindSpeed values are higher than others
         # if d_wind_level > 45 and self.wind_level < 45:
         #     contents = 'WindSpeed >45km/h'
         #     self.send_alert(message=contents, data=wds, now=date_time, level=1)
@@ -233,7 +233,7 @@ class SongAlert(Controller_base):
         #     pass
 
         # alert: dust
-        if d_dust_level > 0.025 and self.dust_level < 25:
+        if d_dust_level > 0.025 and self.dust_level <= 25:
             contents = 'Dust >0.025/m3'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.dust_level = 25
@@ -261,7 +261,7 @@ class SongAlert(Controller_base):
                     self.dome.close()
                 except:
                     self.send_alert(message='Dome cannot be closed',data= wds,now=date_time, level=2)
-            pass
+                pass
 
         if d_humidity_level > 85 and self.humidity_level < 85:
             contents = 'Humidity >85%'
