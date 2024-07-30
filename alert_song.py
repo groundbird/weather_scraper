@@ -17,7 +17,7 @@ from dome_client import DomeClient
 
 from datetime import datetime
 
-isDebug = False
+isDebug =False
 
 
 input_path = '/home/gb/logger/data/weather/%Y/%m/%Y%m%d_song.raw'
@@ -99,9 +99,12 @@ class SongAlert(Controller_base):
 
         self.alert('gbird.auto@gmail.com', self._to_addrs, body,
                     level=level, name='Song',server_name=server_name)
+        #self.alert('gbird.auto@gmail.com', '39gocyomu@gmail.com', body,
+                    # level=level, name='Song',server_name=server_name)
 
         #self.alert('gbird.auto@gmail.com', 't.tanaka@astr.tohoku.ac.jp', body,
          #          level=level, name='Gaulli',server_name=server_name)
+
 
     def read_comm(self):
         buf = self.sock_recv()
@@ -128,20 +131,19 @@ class SongAlert(Controller_base):
         self._stop_freeze = False
         self.read_comm()
 
-        wds = data.split()
-
+        wds = data.split("  ")
         d_wind_level = float(wds[3])/1000*3600 # km/h
-        d_dust_level = float(wds[6]) # /m^3 ? maybe correct
+        d_dust_level = float(wds[6]) # /m^3
         d_humidity_level = float(wds[2]) # %
         d_is_rain    = wds[4] # Yes/No
 
+        
         # info: enable/disable
         if self.issue_alert and self.alert_en:
             self.alert_en = True # temporally true to issue the alert
             self.write_data_to_file('== alert system enable ==')
             contents = '== alert system enable =='
             self.send_alert(message=contents, data=wds, now=date_time, level=0)
-            self.alert_en = True
             self.issue_alert = False
 
         elif self.issue_alert and not self.alert_en:
@@ -201,6 +203,7 @@ class SongAlert(Controller_base):
                 self.is_rain = False
 
         # alert: wind speed
+        # recorded WindSpeed values are higher than others
         # if d_wind_level > 45 and self.wind_level < 45:
         #     contents = 'WindSpeed >45km/h'
         #     self.send_alert(message=contents, data=wds, now=date_time, level=1)
@@ -233,7 +236,7 @@ class SongAlert(Controller_base):
         #     pass
 
         # alert: dust
-        if d_dust_level > 0.025 and self.dust_level <= 25:
+        if d_dust_level > 0.025 and self.dust_level < 25:
             contents = 'Dust >0.025/m3'
             self.send_alert(message=contents, data=wds, now=date_time, level=1)
             self.dust_level = 25
@@ -261,7 +264,7 @@ class SongAlert(Controller_base):
                     self.dome.close()
                 except:
                     self.send_alert(message='Dome cannot be closed',data= wds,now=date_time, level=2)
-                pass
+            pass
 
         if d_humidity_level > 85 and self.humidity_level < 85:
             contents = 'Humidity >85%'

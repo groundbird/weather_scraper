@@ -1,8 +1,0 @@
-#
-# Thank you for using the IAC PWV database.
-# The Precipitable Water Vapour data has been provided by the Sky Team of the Instituto de Astrofisica de Canarias (http://www.iac.es/site-testing).
-# FINAL PRECIPITABLE WATER VAPOUR
-# GNSS (FINAL ORBITS)
-# TEIDE OBSERVATORY (OT)
-"# ANTENNA LOCATION: 28N18'29.04"" - 16W29'58.85""  - height: 2367.2 m (orthometric), 2417.4 m (ellipsoid)"
-"# DATE[yyyy/mm/dd],UT[HH:MM],PWV_final[mm],ERROR[mm],TZD_final[mm],PRESS[Hpa],TEMP[C],METEO_DATA[model/sensor]"
