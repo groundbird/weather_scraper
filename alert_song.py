@@ -128,7 +128,7 @@ class SongAlert(Controller_base):
         self._stop_freeze = False
         self.read_comm()
 
-        wds = data.split()
+        wds = data.split("  ")
 
         d_wind_level = float(wds[3])/1000*3600 # km/h
         d_dust_level = float(wds[6]) # /m^3
